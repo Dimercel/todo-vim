@@ -1,3 +1,5 @@
+let g:loaded_todo = 1
+
 let s:buf_name = "__todo__"
 
 function! s:goto_win(winnr, ...) abort
@@ -12,7 +14,7 @@ function! s:goto_win(winnr, ...) abort
     endif
 endfunction
 
-function! g:TODOToggleWindow() abort
+function! s:ToggleWindow() abort
 
     let todowinnr = bufwinnr(s:buf_name)
     if todowinnr == -1
@@ -93,4 +95,8 @@ function! s:InitWindow() abort
     setlocal textwidth=0
     setlocal nospell
     setlocal nonumber
+endfunction
+
+function! todo#ToggleWindow() abort
+    call s:TODOToggleWindow()
 endfunction
