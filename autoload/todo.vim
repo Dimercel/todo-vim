@@ -98,5 +98,5 @@ function! s:InitWindow() abort
 endfunction
 
 function! todo#ToggleWindow() abort
-    call s:TODOToggleWindow()
+    call s:ToggleWindow()
 endfunction
