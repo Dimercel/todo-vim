@@ -1,6 +1,9 @@
 let g:loaded_todo = 1
 
 let s:buf_name = "__todo__"
+let s:todo_info = {}
+let s:todo_pattern = "TODO "
+
 
 function! s:goto_win(winnr, ...) abort
     let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
@@ -15,7 +18,6 @@ function! s:goto_win(winnr, ...) abort
 endfunction
 
 function! s:ToggleWindow() abort
-
     let todowinnr = bufwinnr(s:buf_name)
     if todowinnr == -1
         call s:OpenWindow()
@@ -25,30 +27,32 @@ function! s:ToggleWindow() abort
 
 endfunction
 
-function! s:GetToDoPositions()
-    let result = []
+function! s:ToDoUpdate()
+    let result = {}
     let cur_pos = getcurpos()
-    
+
     execute "normal! gg"
-    
-    let find_inx = searchpos('TODO', 'n')
+
+    let find_inx = searchpos(s:todo_pattern, 'n')
 
     while find_inx != [0,0]
-        call add(result, find_inx[0]) 
+        let line_text = getline(find_inx[0])
+        let todo_text = strpart(line_text, matchend(line_text, s:todo_pattern))
+        let result[find_inx[0]] = todo_text
 
         call setpos(".", [0, find_inx[0]+1, 0, 0])
-        let find_inx = searchpos('TODO', 'n', line("$"))
+        let find_inx = searchpos(s:todo_pattern, 'n', line("$"))
     endwhile
 
     call setpos(".", cur_pos)
-    return result
+    let s:todo_info = result
 endfunction
 
 function! s:OpenWindow()
     let todowinnr = bufwinnr(s:buf_name)
 
     if todowinnr == -1
-        let todo_inx = s:GetToDoPositions()
+        call s:ToDoUpdate()
 
         silent keepalt botright vertical 30 split __todo__
 
@@ -56,13 +60,9 @@ function! s:OpenWindow()
         setlocal noreadonly
         execute "normal ggdG"
 
-        silent  put =' ----------- TODO ----------- '
-
-        if len(todo_inx) > 0
-            for inx in todo_inx
-                silent  put =' ' . inx . ' Text here.'
-            endfor
-        endif
+        for [line_inx, text] in items(s:todo_info)
+            silent put = line_inx . ': ' . text
+        endfor
 
         call s:InitWindow()
         call s:goto_win("p")
@@ -90,7 +90,7 @@ function! s:InitWindow() abort
     setlocal nobuflisted
     setlocal nomodifiable
     setlocal nolist
-    setlocal nowrap
+    setlocal wrap
     setlocal winfixwidth
     setlocal textwidth=0
     setlocal nospell
