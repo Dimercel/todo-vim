@@ -41,6 +41,11 @@ function! s:ToDoUpdate()
         let result[find_inx[0]] = todo_text
 
         call setpos(".", [0, find_inx[0]+1, 0, 0])
+
+        if find_inx[0] == line("$")
+            break
+        endif
+
         let find_inx = searchpos(s:todo_pattern, 'n', line("$"))
     endwhile
 
