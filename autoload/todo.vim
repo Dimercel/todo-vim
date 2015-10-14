@@ -33,7 +33,7 @@ function! s:ToDoUpdate()
 
     execute "normal! gg"
 
-    let find_inx = searchpos(s:todo_pattern, 'n')
+    let find_inx = searchpos(s:todo_pattern, 'cn')
 
     while find_inx != [0,0]
         let line_text = getline(find_inx[0])
@@ -46,7 +46,7 @@ function! s:ToDoUpdate()
             break
         endif
 
-        let find_inx = searchpos(s:todo_pattern, 'n', line("$"))
+        let find_inx = searchpos(s:todo_pattern, 'cn', line("$"))
     endwhile
 
     call setpos(".", cur_pos)
@@ -63,7 +63,10 @@ function! s:OpenWindow()
 
         setlocal modifiable
         setlocal noreadonly
-        execute "normal ggdG"
+        execute "normal! ggdG"
+
+        silent 0put = '\" TODO'
+        silent  put _
 
         for [line_inx, text] in items(s:todo_info)
             silent put = line_inx . ': ' . text
