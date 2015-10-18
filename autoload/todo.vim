@@ -59,7 +59,7 @@ function! s:OpenWindow()
     if todowinnr == -1
         call s:ToDoUpdate()
 
-        silent keepalt botright vertical 30 split __todo__
+        execute 'silent keepalt botright vertical '.g:todo_win_width.' split __todo__'
 
         setlocal modifiable
         setlocal noreadonly
