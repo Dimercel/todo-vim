@@ -68,8 +68,9 @@ function! s:OpenWindow()
         silent 0put = '\" TODO'
         silent  put _
 
-        for [line_inx, text] in items(s:todo_info)
-            silent put = line_inx . ': ' . text
+        let sort_keys = sort(keys(s:todo_info), 'n')
+        for line_inx in sort_keys
+            silent put = line_inx . ': ' . s:todo_info[line_inx]
         endfor
 
         call s:InitWindow()
