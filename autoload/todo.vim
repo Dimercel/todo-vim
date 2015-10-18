@@ -68,7 +68,7 @@ function! s:OpenWindow()
         silent 0put = '\" TODO'
         silent  put _
 
-        let sort_keys = sort(keys(s:todo_info), 'n')
+        let sort_keys = sort(map(keys(s:todo_info), 'str2nr(v:val)'), 'n')
         for line_inx in sort_keys
             silent put = line_inx . ': ' . s:todo_info[line_inx]
         endfor
