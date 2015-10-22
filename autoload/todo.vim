@@ -2,8 +2,8 @@ let g:loaded_todo = 1
 
 let s:buf_name = "__todo__"
 let s:todo_info = {}
-let s:todo_pattern = "TODO "
-
+let s:todo_patterns = ["TODO[^a-zA-Z]", "FIXME[^a-zA-Z]"]
+let s:tag_pattern = "\@[^\ ]+"
 
 function! s:goto_win(winnr, ...) abort
     let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
@@ -27,27 +27,83 @@ function! s:ToggleWindow() abort
 
 endfunction
 
+function! s:GetAllMatches(text, pattern)
+    let result = []
+
+    let offset = 0
+    while offset != -1
+        let find_inx_end = matchend(a:text, a:pattern, offset)
+        let find_inx_begin = match(a:text, a:pattern, offset)
+
+        if find_inx_end != -1 && find_inx_begin != -1
+            let match = strpart(a:text, find_inx_begin, find_inx_end - find_inx_begin)
+            call add(result, match)
+        endif
+
+        let offset = find_inx_end
+    endwhile
+
+    return result
+endfunction
+
+function! s:StrTrim(str)
+    let result = substitute(a:str, '\v^\s+', '', '')
+    let result = substitute(result, '\v\s+$', '', '')
+
+    return result
+endfunction
+
+function! s:GetMatch(text, pattern, start)
+    let result = ""
+
+    let find_inx_end = matchend(a:text, a:pattern, a:start)
+    let find_inx_begin = match(a:text, a:pattern, a:start)
+
+    if find_inx_end == -1
+        return ""
+    endif
+
+    let result = strpart(a:text, find_inx_begin, find_inx_end - find_inx_begin)
+
+    return result
+endfunction
+
+function! s:ParseToDoLine(text, pattern)
+    let result = {}
+
+    let result.patt = s:GetMatch(a:text, a:pattern, 0)
+    let result.tags = s:GetAllMatches(a:text, s:tag_pattern)
+
+    let result.text = s:StrTrim(strpart(a:text, matchend(a:text, result.patt)))
+
+    return result
+endfunction
+
 function! s:ToDoUpdate()
     let result = {}
     let cur_pos = getcurpos()
 
-    execute "normal! gg"
+    call setpos('.', [0,0,0,0])
 
-    let find_inx = searchpos(s:todo_pattern, 'cn')
 
-    while find_inx != [0,0]
-        let line_text = getline(find_inx[0])
-        let todo_text = strpart(line_text, matchend(line_text, s:todo_pattern))
-        let result[find_inx[0]] = todo_text
+    for search_pat in s:todo_patterns
+        let find_inx = searchpos(search_pat, 'cn')
 
-        call setpos(".", [0, find_inx[0]+1, 0, 0])
+        while find_inx != [0,0]
+            let line_text = getline(find_inx[0])
+            let info = s:ParseToDoLine(line_text, search_pat)
 
-        if find_inx[0] == line("$")
-            break
-        endif
+            let result[find_inx[0]] = info
 
-        let find_inx = searchpos(s:todo_pattern, 'cn', line("$"))
-    endwhile
+            call setpos(".", [0, find_inx[0]+1, 0, 0])
+
+            if find_inx[0] == line("$")
+                break
+            endif
+
+            let find_inx = searchpos(search_pat, 'cn', line("$"))
+        endwhile
+    endfor
 
     call setpos(".", cur_pos)
     let s:todo_info = result
@@ -70,7 +126,7 @@ function! s:OpenWindow()
 
         let sort_keys = sort(map(keys(s:todo_info), 'str2nr(v:val)'), 'n')
         for line_inx in sort_keys
-            silent put = line_inx . ': ' . s:todo_info[line_inx]
+            silent put = line_inx . ': ' . s:todo_info[line_inx].text
         endfor
 
         call s:InitWindow()
