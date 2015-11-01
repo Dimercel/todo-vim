@@ -2,8 +2,10 @@ let g:loaded_todo = 1
 
 let s:buf_name = "__todo__"
 let s:todo_info = {}
-let s:todo_patterns = ["TODO[^a-zA-Z]", "FIXME[^a-zA-Z]"]
-let s:tag_pattern = "\@[^\ ]+"
+let s:todo_type     = ['todo', 'fixme', 'note']
+let s:todo_patterns = ["TODO[^a-zA-Z]", "FIXME[^a-zA-Z]", "NOTE[^a-zA-Z]"]
+let s:tag_arg_pattern = '\v\:[^\ ]+'
+let s:tag_pattern = '\v\@[^\ ]+(\ ' . strpart(s:tag_arg_pattern, 2) . ')?'
 
 function! s:goto_win(winnr, ...) abort
     let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
@@ -72,11 +74,31 @@ function! s:ParseToDoLine(text, pattern)
     let result = {}
 
     let result.patt = s:GetMatch(a:text, a:pattern, 0)
-    let result.tags = s:GetAllMatches(a:text, s:tag_pattern)
+    let tags = s:GetAllMatches(a:text, s:tag_pattern)
+    let result.tags = []
 
-    let result.text = s:StrTrim(strpart(a:text, matchend(a:text, result.patt)))
+    for tag_text in tags
+        call add(result.tags, s:ParseTag(tag_text))
+    endfor
+
+    let result.text = strpart(a:text, matchend(a:text, result.patt))
+    let result.text = s:StrTrim(substitute(result.text, s:tag_pattern, '', 'g'))
 
     return result
+endfunction
+
+function! s:ParseTag(text)
+    let tag = {}
+
+    let tag.arg = s:StrTrim(s:GetMatch(a:text, s:tag_arg_pattern, 0))
+    let tag.name = s:StrTrim(strpart(a:text, 0, strlen(a:text) - strlen(tag.arg)))
+
+    " cut off ':'
+    if strlen(tag.arg) != 0
+        let tag.arg = strpart(tag.arg, 1)
+    endif
+
+    return tag
 endfunction
 
 function! s:ToDoUpdate()
@@ -86,12 +108,15 @@ function! s:ToDoUpdate()
     call setpos('.', [0,0,0,0])
 
 
-    for search_pat in s:todo_patterns
+    for inx in range(len(s:todo_patterns))
+        let search_pat = s:todo_patterns[inx]
+        let pat_type = s:todo_type[inx]
         let find_inx = searchpos(search_pat, 'cn')
 
         while find_inx != [0,0]
             let line_text = getline(find_inx[0])
             let info = s:ParseToDoLine(line_text, search_pat)
+            let info.type = pat_type
 
             let result[find_inx[0]] = info
 
@@ -109,6 +134,28 @@ function! s:ToDoUpdate()
     let s:todo_info = result
 endfunction
 
+function! s:GetInfoStr(key)
+    if !has_key(s:todo_info, a:key)
+        return ''
+    endif
+
+    let info = s:todo_info[a:key]
+    let result = '[' . info.type . '] ' .  info.text
+
+    if len(info.tags)  > 0
+        let result .= " "
+        for tag in info.tags
+            if tag.arg == ''
+                let result .= tag.name . " "
+            else
+                let result .= tag.name . " " . tag.arg . " "
+            endif
+        endfor
+    endif
+
+    return s:StrTrim(result)
+endfunction
+
 function! s:OpenWindow()
     let todowinnr = bufwinnr(s:buf_name)
 
@@ -124,9 +171,9 @@ function! s:OpenWindow()
         silent 0put = '\" TODO'
         silent  put _
 
-        let sort_keys = sort(map(keys(s:todo_info), 'str2nr(v:val)'), 'n')
-        for line_inx in sort_keys
-            silent put = line_inx . ': ' . s:todo_info[line_inx].text
+        let sort_by_line = sort(map(keys(s:todo_info), 'str2nr(v:val)'), 'n')
+        for line_inx in sort_by_line
+            silent put = s:GetInfoStr(line_inx)
         endfor
 
         call s:InitWindow()

@@ -5,13 +5,15 @@ if exists("b:current_syntax")
 endif
 
 
-syntax match ToDoLineNum '\v^\d+'
-syntax match ToDoTitle   '^".*'
-syntax match ToDoTag     '\v\@[^\ ]+'
+syntax match ToDoTitle  '^".*'
+syntax match ToDoTag    '\v\@[^\ ]+(\ [^\ ]+)?' contains=ToDoTagArg
+syntax match ToDoTagArg '\v\ [^\ ]+' contained
+syntax match ToDoType   '\v^\[\w+\]'
 
 
-hi def link ToDoLineNum Number
 hi def link ToDoTitle   Comment
 hi def link ToDoTag     Special
+hi def link ToDoTagArg  Statement
+hi def link ToDoType    PreProc
 
 let b:current_syntax = "todo"
