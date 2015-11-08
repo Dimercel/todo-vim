@@ -191,7 +191,7 @@ function! s:OpenWindow()
     if todowinnr == -1
         call s:ToDoUpdate()
 
-        execute 'silent keepalt botright vertical '.g:todo_win_width.' split __todo__'
+        execute 'silent keepalt topleft split '.s:buf_name
 
         call s:UpdateWindow()
 
