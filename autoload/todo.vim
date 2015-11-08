@@ -1,11 +1,13 @@
 let g:loaded_todo = 1
 
-let s:buf_name = "__todo__"
-let s:todo_info = {}
-let s:todo_type     = ['todo', 'fixme', 'note']
-let s:todo_patterns = ["TODO[^a-zA-Z]", "FIXME[^a-zA-Z]", "NOTE[^a-zA-Z]"]
+let s:buf_name        = '__todo__'
+let s:todo_info       = []
+let s:todo_type       = ['todo', 'fixme', 'note']
+let s:todo_patterns   = ["TODO[^a-zA-Z]", "FIXME[^a-zA-Z]", "NOTE[^a-zA-Z]"]
 let s:tag_arg_pattern = '\v\:[^\ ]+'
-let s:tag_pattern = '\v\@[^\ ]+(\ ' . strpart(s:tag_arg_pattern, 2) . ')?'
+let s:tag_pattern     = '\v\@[^\ ]+(\ ' . strpart(s:tag_arg_pattern, 2) . ')?'
+"let s:sort_comp       = 's:PriorityComparator'
+let s:sort_comp       = 's:LineComparator'
 
 function! s:goto_win(winnr, ...) abort
     let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
@@ -27,6 +29,36 @@ function! s:ToggleWindow() abort
         call s:CloseWindow()
     endif
 
+endfunction
+
+function! s:LineComparator(lval, rval)
+    return a:lval.line == a:rval.line ? 0 : a:lval.line > a:rval.line ? 1 : -1
+endfunction
+
+function! s:PriorityComparator(lval, rval)
+    let lpriority = -1
+    let lpri_tag = filter(copy(a:lval.tags), 'v:val.name =~ "@p"')
+
+    if len(lpri_tag) != 0
+        let lpriority = str2nr(lpri_tag[0].arg)
+    endif
+
+    let rpriority = -1
+    let rpri_tag = filter(copy(a:rval.tags), 'v:val.name =~ "@p"')
+
+    if len(rpri_tag) != 0
+        let rpriority = str2nr(rpri_tag[0].arg)
+    endif
+
+    return lpriority == rpriority ? 0 : lpriority < rpriority ? 1 : -1
+endfunction
+
+function! s:SetSortByPriority()
+    let s:sort_comp = 's:PriorityComparator'
+endfunction
+
+function! s:SetSortByLine()
+    let s:sort_comp = 's:LineComparator'
 endfunction
 
 function! s:GetAllMatches(text, pattern)
@@ -102,7 +134,7 @@ function! s:ParseTag(text)
 endfunction
 
 function! s:ToDoUpdate()
-    let result = {}
+    let result = []
     let cur_pos = getcurpos()
 
     call setpos('.', [0,0,0,0])
@@ -117,8 +149,9 @@ function! s:ToDoUpdate()
             let line_text = getline(find_inx[0])
             let info = s:ParseToDoLine(line_text, search_pat)
             let info.type = pat_type
+            let info.line = find_inx[0]
 
-            let result[find_inx[0]] = info
+            call add(result, info)
 
             call setpos(".", [0, find_inx[0]+1, 0, 0])
 
@@ -134,17 +167,13 @@ function! s:ToDoUpdate()
     let s:todo_info = result
 endfunction
 
-function! s:GetInfoStr(key)
-    if !has_key(s:todo_info, a:key)
-        return ''
-    endif
+function! s:GetInfoStr(todo_item)
 
-    let info = s:todo_info[a:key]
-    let result = '[' . info.type . '] ' .  info.text
+    let result = '[' . a:todo_item.type . '] ' .  a:todo_item.text
 
-    if len(info.tags)  > 0
+    if len(a:todo_item.tags)  > 0
         let result .= " "
-        for tag in info.tags
+        for tag in a:todo_item.tags
             if tag.arg == ''
                 let result .= tag.name . " "
             else
@@ -164,21 +193,25 @@ function! s:OpenWindow()
 
         execute 'silent keepalt botright vertical '.g:todo_win_width.' split __todo__'
 
-        setlocal modifiable
-        setlocal noreadonly
-        execute "normal! ggdG"
-
-        silent 0put = '\" TODO'
-        silent  put _
-
-        let sort_by_line = sort(map(keys(s:todo_info), 'str2nr(v:val)'), 'n')
-        for line_inx in sort_by_line
-            silent put = s:GetInfoStr(line_inx)
-        endfor
+        call s:UpdateWindow()
 
         call s:InitWindow()
         call s:goto_win("p")
     endif
+endfunction
+
+function! s:UpdateWindow()
+    setlocal modifiable
+    setlocal noreadonly
+    execute "normal! ggdG"
+
+    silent 0put = '\" TODO'
+    silent  put _
+
+    let s:todo_info = sort(s:todo_info, s:sort_comp)
+    for item in s:todo_info
+        silent put = s:GetInfoStr(item)
+    endfor
 endfunction
 
 function! s:CloseWindow()
@@ -207,6 +240,13 @@ function! s:InitWindow() abort
     setlocal textwidth=0
     setlocal nospell
     setlocal nonumber
+
+    call s:MappingKeys()
+endfunction
+
+function! s:MappingKeys() abort
+    nnoremap <script> <silent> <buffer> sp :call <SID>SetSortByPriority()<CR> :call <SID>UpdateWindow()<CR>
+    nnoremap <script> <silent> <buffer> sl :call <SID>SetSortByLine()<CR> :call <SID>UpdateWindow()<CR>
 endfunction
 
 function! todo#ToggleWindow() abort
