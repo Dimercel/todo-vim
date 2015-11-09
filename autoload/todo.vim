@@ -6,7 +6,6 @@ let s:todo_type       = ['todo', 'fixme', 'note']
 let s:todo_patterns   = ["TODO[^a-zA-Z]", "FIXME[^a-zA-Z]", "NOTE[^a-zA-Z]"]
 let s:tag_arg_pattern = '\v\:[^\ ]+'
 let s:tag_pattern     = '\v\@[^\ ]+(\ ' . strpart(s:tag_arg_pattern, 2) . ')?'
-"let s:sort_comp       = 's:PriorityComparator'
 let s:sort_comp       = 's:LineComparator'
 
 function! s:goto_win(winnr, ...) abort
@@ -185,7 +184,7 @@ function! s:GetInfoStr(todo_item)
     return s:StrTrim(result)
 endfunction
 
-function! s:OpenWindow()
+function! s:OpenWinAndStay()
     let todowinnr = bufwinnr(s:buf_name)
 
     if todowinnr == -1
@@ -196,6 +195,14 @@ function! s:OpenWindow()
         call s:UpdateWindow()
 
         call s:InitWindow()
+    endif
+endfunction
+
+function! s:OpenWindow()
+    let todowinnr = bufwinnr(s:buf_name)
+
+    if todowinnr == -1
+        call s:OpenWinAndStay()
         call s:goto_win("p")
     endif
 endfunction
@@ -236,7 +243,6 @@ function! s:InitWindow() abort
     setlocal nomodifiable
     setlocal nolist
     setlocal wrap
-    setlocal winfixwidth
     setlocal textwidth=0
     setlocal nospell
     setlocal nonumber
@@ -247,8 +253,18 @@ endfunction
 function! s:MappingKeys() abort
     nnoremap <script> <silent> <buffer> sp :call <SID>SetSortByPriority()<CR> :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> sl :call <SID>SetSortByLine()<CR> :call <SID>UpdateWindow()<CR>
+    nnoremap <script> <silent> <buffer> r  :call <SID>UpdateWindow()<CR>
+    nnoremap <script> <silent> <buffer> q  :call <SID>CloseWindow()<CR>
 endfunction
 
 function! todo#ToggleWindow() abort
     call s:ToggleWindow()
+endfunction
+
+function! todo#OpenWindow() abort
+    call s:OpenWinAndStay()
+endfunction
+
+function! todo#CloseWindow() abort
+    call s:CloseWindow()
 endfunction
