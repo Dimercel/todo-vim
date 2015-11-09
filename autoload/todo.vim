@@ -30,26 +30,34 @@ function! s:ToggleWindow() abort
 
 endfunction
 
+function! s:TypeComparator(lval, rval)
+    return a:lval.type == a:rval.type ? 0 : a:lval.type < a:rval.type ? -1 : 1
+endfunction
+
 function! s:LineComparator(lval, rval)
     return a:lval.line == a:rval.line ? 0 : a:lval.line > a:rval.line ? 1 : -1
 endfunction
 
 function! s:PriorityComparator(lval, rval)
     let lpriority = -1
-    let lpri_tag = filter(copy(a:lval.tags), 'v:val.name =~ "@p"')
+    let lpri_tag = filter(copy(a:lval.tags), 'v:val.name ==# "@p"')
 
     if len(lpri_tag) != 0
         let lpriority = str2nr(lpri_tag[0].arg)
     endif
 
     let rpriority = -1
-    let rpri_tag = filter(copy(a:rval.tags), 'v:val.name =~ "@p"')
+    let rpri_tag = filter(copy(a:rval.tags), 'v:val.name ==# "@p"')
 
     if len(rpri_tag) != 0
         let rpriority = str2nr(rpri_tag[0].arg)
     endif
 
     return lpriority == rpriority ? 0 : lpriority < rpriority ? 1 : -1
+endfunction
+
+function! s:SetSortByType()
+    let s:sort_comp = 's:TypeComparator'
 endfunction
 
 function! s:SetSortByPriority()
@@ -253,6 +261,7 @@ endfunction
 function! s:MappingKeys() abort
     nnoremap <script> <silent> <buffer> sp :call <SID>SetSortByPriority()<CR> :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> sl :call <SID>SetSortByLine()<CR> :call <SID>UpdateWindow()<CR>
+    nnoremap <script> <silent> <buffer> st :call <SID>SetSortByType()<CR> :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> r  :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> q  :call <SID>CloseWindow()<CR>
 endfunction
