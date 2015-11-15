@@ -8,6 +8,7 @@ let s:tag_arg_pattern = '\v\:[^\ ]+'
 let s:tag_pattern     = '\v\@[^\ ]+(\ ' . strpart(s:tag_arg_pattern, 2) . ')?'
 let s:sort_comp       = 's:LineComparator'
 
+
 function! s:goto_win(winnr, ...) abort
     let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
                 \ : 'wincmd ' . a:winnr
@@ -220,8 +221,7 @@ function! s:UpdateWindow()
     setlocal noreadonly
     execute "normal! ggdG"
 
-    silent 0put = '\" TODO'
-    silent  put _
+    silent 0put _
 
     let s:todo_info = sort(s:todo_info, s:sort_comp)
     for item in s:todo_info
@@ -258,13 +258,67 @@ function! s:InitWindow() abort
     call s:MappingKeys()
 endfunction
 
+function! s:GetLabelByCursorPos()
+    let label_info_line_inx = 2
+
+    if bufname('%') != s:buf_name
+        return {}
+    endif
+
+    "range of string indexes with info about labels
+    let avail_range = [label_info_line_inx, label_info_line_inx +
+                \ (len(s:todo_info)-1)]
+
+    let cur_line = line(".")
+    if cur_line < avail_range[0] || cur_line > avail_range[1]
+        return {}
+    endif
+
+    return get(s:todo_info, cur_line - avail_range[0], {})
+endfunction
+
+function! s:ViewActiveLabel()
+    let label_info = s:GetLabelByCursorPos()
+
+    if label_info == {}
+        return
+    endif
+
+    call s:goto_win('p')
+    call setpos('.', [0,label_info.line,0,0])
+    normal! zz
+    call s:goto_win(bufwinnr(s:buf_name))
+endfunction
+
+function! s:MoveToActiveLabel()
+    call s:ViewActiveLabel()
+    call s:CloseWindow()
+endfunction
+
+function! s:BuildAutoCmds() abort
+    augroup TODOAutoCmds
+        autocmd!
+        if g:todo_autopreview
+            execute 'autocmd CursorMoved ' . s:buf_name . ' nested call s:ViewActiveLabel()'
+        endif
+    augroup END
+endfunction
+
 function! s:MappingKeys() abort
     nnoremap <script> <silent> <buffer> sp :call <SID>SetSortByPriority()<CR> :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> sl :call <SID>SetSortByLine()<CR> :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> st :call <SID>SetSortByType()<CR> :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> r  :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> q  :call <SID>CloseWindow()<CR>
+    nnoremap <script> <silent> <buffer> <CR> :call <SID>MoveToActiveLabel()<CR>
+    nnoremap <script> <silent> <buffer> p :call <SID>ViewActiveLabel()<CR>
 endfunction
+
+function! s:Init() abort
+    call s:BuildAutoCmds()
+endfunction
+
+call s:Init()
 
 function! todo#ToggleWindow() abort
     call s:ToggleWindow()
