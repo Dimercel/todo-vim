@@ -204,6 +204,8 @@ function! s:OpenWinAndStay()
         call s:UpdateWindow()
 
         call s:InitWindow()
+
+        call setpos('.', [0,0,0,0])
     endif
 endfunction
 
