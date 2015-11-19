@@ -1,0 +1,113 @@
+*todo.txt*    Simple plugin for manage your todo notes
+                                                                    *todo-vim*
+Author:           Ito Dimercel <xolcman@gmail.com>
+Version:          0.2.0
+
+==============================================================================
+Contents                                                       *todo-contents*
+
+         1. Intro ........................... |todo-intro|
+              Features ...................... |todo-features|
+         2. Installation .................... |todo-installation|
+         3. Usage ........................... |todo-usage|
+              Commands ...................... |todo-commands|
+              Key mappings .................. |todo-keys|
+              Variables ..................... |todo-variables|
+         4. Tags ............................ |todo-tags|
+              Special tags .................. |todo-special-tags|
+
+==============================================================================
+1. Intro                                                          *todo-intro*
+
+*todo-vim* is plugin for manage your todo notes. He will help you to navigate 
+and manage your todo labels in code. Plugin support next type of labels: todo,
+fixme, note. Label examples:
+
+TODO: Simple todo example
+TODO: todo with tag priority and custom tag @p :8 @custom :custom
+NOTE: Sinple note example with tag @tag
+
+
+------------------------------------------------------------------------------
+FEATURES                                                       *todo-features*
+
+  - Display todo labels in separate navigation window
+  - Sort labels by type, line, priority.
+  - Quick jump to label
+  - Autojumping when choosing
+  - Tags support
+
+==============================================================================
+2. Installation                                            *todo-installation*
+
+Install the distributed files into your Vim script directory which is usually
+~/.vim/. You should consider to use one of the famous package managers for Vim
+like vundle or neobundle to install the plugin.
+
+After installation you can run todo-vim with the |:TODOOpen| or |:TODOToggle|
+commands.
+
+==============================================================================
+4. Usage                                                          *todo-usage*
+
+Basic usage of todo-vim is opening todo window by |:TODOOpen| and moving
+the cursor to a certain label. If set of g:todo_autopreview variable, you
+will immediately see the label in your buffer. You can sort labels by
+different criterios like type or priority. More about sorting in |*todo-keys*|
+
+Quick start
+
+Put something like the following into your ~/.vimrc:
+
+nmap <F5> :TODOToggle<CR>
+
+If you do this the F5 key will toggle the ToDo window and you can see navigate
+by todo labels.
+
+------------------------------------------------------------------------------
+COMMANDS                                                       *todo-commands*
+
+:TODOOpen                                                          *:TODOOpen*
+    Open the todo-vim window if it is closed.
+
+:TODOClose                                                        *:TODOClose*
+    Close the todo-vim window if it is open.
+
+:TODOToggle                                                      *:TODOToggle*
+    Open the todo-vim window if it is closed, or close it if it is open.
+
+------------------------------------------------------------------------------
+KEY MAPPINGS                                                       *todo-keys*
+
+The following mappings are support in the todo-vim window:
+
+<CR>/<Enter>  Jump to the label under the cursor.
+q             Close todo-vim window.
+p             View the label under the cursor in buffer.
+r             Update todo-vim window.
+sp            Sort labels using priority tag (@p)
+sl            Sort labels by line
+st            Sort labels by type(todo,note,fixme)
+
+------------------------------------------------------------------------------
+VARIABLES                                                     *todo-variables*
+
+g:todo_autopreview                                        *g:todo_autopreview*
+       If this variable is 1, todo-vim will automatically move to label under
+       cursor in buffer.
+
+==============================================================================
+4. Tags                                                          *todo-tags*
+
+Plugin support custom tags. Syntax: @tagname :tag_value. This tags displayed
+in todo-vim window. Exist and special tags like priority tag, this tags
+support sorting by tag value. You are create custom tag with value or without.
+Example: @custom_tag :custom_value
+
+------------------------------------------------------------------------------
+SPECIAL TAGS                                               *todo-special-tags*
+
+Priority    Priority tag. Value is number. Example:
+            @p :10
+
+==============================================================================
