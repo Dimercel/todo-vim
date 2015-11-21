@@ -19,7 +19,7 @@ Contents                                                       *todo-contents*
 ==============================================================================
 1. Intro                                                          *todo-intro*
 
-*todo-vim* is plugin for manage your todo notes. He will help you to navigate 
+todo-vim is plugin for manage your todo notes. He will help you to navigate 
 and manage your todo labels in code. Plugin support next type of labels: todo,
 fixme, note. Label examples:
 
