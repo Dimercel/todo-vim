@@ -58,6 +58,24 @@ function! s:PriorityComparator(lval, rval)
     return lpriority == rpriority ? 0 : lpriority < rpriority ? 1 : -1
 endfunction
 
+function! s:AuthorComparator(lval, rval)
+    let lauthor = "\uFFFF"
+    let laut_tag = filter(copy(a:lval.tags), 'v:val.name ==# "@author"')
+
+    if len(laut_tag) != 0
+        let lauthor = laut_tag[0].arg
+    endif
+
+    let rauthor = "\uFFFF"
+    let raut_tag = filter(copy(a:rval.tags), 'v:val.name ==# "@author"')
+
+    if len(raut_tag) != 0
+        let rauthor = raut_tag[0].arg
+    endif
+
+    return lauthor == rauthor ? 0 : lauthor > rauthor ? 1 : -1
+endfunction
+
 function! s:SetSortByType()
     let s:sort_comp = 's:TypeComparator'
 endfunction
@@ -68,6 +86,10 @@ endfunction
 
 function! s:SetSortByLine()
     let s:sort_comp = 's:LineComparator'
+endfunction
+
+function! s:SetSortByAuthor()
+    let s:sort_comp = 's:AuthorComparator'
 endfunction
 
 function! s:GetAllMatches(text, pattern)
@@ -328,6 +350,7 @@ function! s:MappingKeys() abort
     nnoremap <script> <silent> <buffer> sp :call <SID>SetSortByPriority()<CR> :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> sl :call <SID>SetSortByLine()<CR> :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> st :call <SID>SetSortByType()<CR> :call <SID>UpdateWindow()<CR>
+    nnoremap <script> <silent> <buffer> sa :call <SID>SetSortByAuthor()<CR> :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> r  :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> q  :call <SID>CloseWindow()<CR>
     nnoremap <script> <silent> <buffer> <CR> :call <SID>MoveToActiveLabel()<CR>
