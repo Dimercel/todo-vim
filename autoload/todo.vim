@@ -147,7 +147,6 @@ function! s:ToDoUpdate()
 
     call setpos('.', [0,0,0,0])
 
-
     for inx in range(len(s:todo_patterns))
         let search_pat = s:todo_patterns[inx]
         let pat_type = s:todo_type[inx]
@@ -201,9 +200,8 @@ function! s:OpenWinAndStay()
 
         execute 'silent keepalt topleft split '.s:buf_name
 
-        call s:UpdateWindow()
-
         call s:InitWindow()
+        call s:UpdateWindow()
 
         call setpos('.', [0,0,0,0])
     endif
@@ -223,12 +221,22 @@ function! s:UpdateWindow()
     setlocal noreadonly
     execute "normal! ggdG"
 
-    silent 0put _
+    if len(s:todo_info) == 0
+        silent 0put ='\" Nothing yet('
+    else
+        silent 0put _
 
-    let s:todo_info = sort(s:todo_info, s:sort_comp)
-    for item in s:todo_info
-        silent put = s:GetInfoStr(item)
-    endfor
+        let s:todo_info = sort(s:todo_info, s:sort_comp)
+        for item in s:todo_info
+            silent put = s:GetInfoStr(item)
+        endfor
+    endif
+
+    " Erase last space string
+    execute "normal! Gdd"
+
+    setlocal nomodifiable
+    setlocal readonly
 endfunction
 
 function! s:CloseWindow()
