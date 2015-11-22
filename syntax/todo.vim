@@ -6,8 +6,8 @@ endif
 
 
 syntax match ToDoTitle  '^".*'
-syntax match ToDoTag    '\v\@[^\ ]+(\ [^\ ]+)?' contains=ToDoTagArg
-syntax match ToDoTagArg '\v\ [^\ ]+' contained
+syntax match ToDoTag    '\v\@[^\@]+' contains=ToDoTagArg
+syntax match ToDoTagArg '\v\ [^\@]+' contained
 syntax match ToDoType   '\v^\[\w+\]'
 
 

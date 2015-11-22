@@ -4,7 +4,7 @@ let s:buf_name        = '__todo__'
 let s:todo_info       = []
 let s:todo_type       = ['todo', 'fixme', 'note']
 let s:todo_patterns   = ["TODO[^a-zA-Z]", "FIXME[^a-zA-Z]", "NOTE[^a-zA-Z]"]
-let s:tag_arg_pattern = '\v\:[^\ ]+'
+let s:tag_arg_pattern = '\v\:(\"[^\"]+\"|[^\ ]+)'
 let s:tag_pattern     = '\v\@[^\ ]+(\ ' . strpart(s:tag_arg_pattern, 2) . ')?'
 let s:sort_comp       = 's:LineComparator'
 
@@ -31,6 +31,7 @@ function! s:ToggleWindow() abort
 
 endfunction
 
+" Comparators for sorting
 function! s:TypeComparator(lval, rval)
     return a:lval.type == a:rval.type ? 0 : a:lval.type < a:rval.type ? -1 : 1
 endfunction
@@ -88,9 +89,15 @@ function! s:GetAllMatches(text, pattern)
     return result
 endfunction
 
-function! s:StrTrim(str)
-    let result = substitute(a:str, '\v^\s+', '', '')
-    let result = substitute(result, '\v\s+$', '', '')
+function! s:StrTrim(str, ... )
+    let re = '\s+'
+
+    if a:0 > 0
+        let re = a:1
+    endif
+
+    let result = substitute(a:str, '\v^'.re, '', '')
+    let result = substitute(result, '\v'.re.'$', '', '')
 
     return result
 endfunction
@@ -137,6 +144,9 @@ function! s:ParseTag(text)
     if strlen(tag.arg) != 0
         let tag.arg = strpart(tag.arg, 1)
     endif
+
+    " cut '"' if exist
+    let tag.arg = s:StrTrim(tag.arg, '\"')
 
     return tag
 endfunction
