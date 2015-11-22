@@ -103,11 +103,16 @@ Plugin support custom tags. Syntax: @tagname :tag_value. This tags displayed
 in todo-vim window. Exist and special tags like priority tag, this tags
 support sorting by tag value. You are create custom tag with value or without.
 Example: @custom_tag :custom_value
+         @custom_tag :"Text with spaces"
+         @custom_tag
 
 ------------------------------------------------------------------------------
 SPECIAL TAGS                                               *todo-special-tags*
 
-Priority    Priority tag. Value is number. Example:
-            @p :10
+Priority    Priority tag. Value is number.
+            Example: @p :10
+
+Author      Tag contain author name.
+            Example: @author :"Ito Dimercel"
 
 ==============================================================================
