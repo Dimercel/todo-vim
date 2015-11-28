@@ -53,7 +53,7 @@ commands.
 Basic usage of todo-vim is opening todo window by |:TODOOpen| and moving
 the cursor to a certain label. If set of g:todo_autopreview variable, you
 will immediately see the label in your buffer. You can sort labels by
-different criterios like type or priority. More about sorting in *todo-keys*
+different criterios like type or priority. More about sorting in todo-keys
 
 Quick start
 
