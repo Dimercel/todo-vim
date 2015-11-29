@@ -64,6 +64,12 @@ nmap <F5> :TODOToggle<CR>
 If you do this the F5 key will toggle the ToDo window and you can see navigate
 by todo labels.
 
+Or:
+
+nmap <F5> :TODOOpen<CR>
+
+Like :TODOToggle, but cursor moved in todo-vim window.
+
 ------------------------------------------------------------------------------
 COMMANDS                                                       *todo-commands*
 
@@ -96,6 +102,11 @@ VARIABLES                                                     *todo-variables*
 g:todo_autopreview                                        *g:todo_autopreview*
        If this variable is 1, todo-vim will automatically move to label under
        cursor in buffer.
+
+g:todo_winheight                                            *g:todo_winheight*
+       If you do not like the standard height of the window, use this
+       variable. The value of this variable is the height of the window when
+       opening.
 
 ==============================================================================
 4. Tags                                                          *todo-tags*

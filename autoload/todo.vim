@@ -298,6 +298,11 @@ function! s:InitWindow() abort
     setlocal nonumber
 
     call s:MappingKeys()
+
+    if exists('g:todo_winheight')
+        execute 'resize ' . g:todo_winheight . '<CR>'
+    endif
+
 endfunction
 
 function! s:GetLabelByCursorPos()
