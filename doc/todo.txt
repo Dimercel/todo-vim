@@ -25,7 +25,7 @@ fixme, note. Label examples:
 
 TODO: Simple todo example
 TODO: todo with tag priority and custom tag @p :8 @custom :custom
-NOTE: Sinple note example with tag @tag
+NOTE: Simple note example with tag @tag
 
 
 ------------------------------------------------------------------------------
@@ -90,6 +90,7 @@ The following mappings are support in the todo-vim window:
 <CR>/<Enter>  Jump to the label under the cursor.
 q             Close todo-vim window.
 p             View the label under the cursor in buffer.
+dd            Delete label under the cursor
 r             Update todo-vim window.
 sp            Sort labels using priority tag (@p)
 sl            Sort labels by line

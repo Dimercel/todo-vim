@@ -249,6 +249,8 @@ function! s:OpenWindow()
 endfunction
 
 function! s:UpdateWindow()
+    let cursor_pos = getcurpos()
+
     setlocal modifiable
     setlocal noreadonly
     execute "normal! ggdG"
@@ -269,6 +271,8 @@ function! s:UpdateWindow()
 
     setlocal nomodifiable
     setlocal readonly
+
+    call setpos('.', cursor_pos)
 endfunction
 
 function! s:CloseWindow()
@@ -342,6 +346,23 @@ function! s:MoveToActiveLabel()
     call s:CloseWindow()
 endfunction
 
+" Deletes label under cursor
+function! s:RemoveLabel()
+    let label_info = s:GetLabelByCursorPos()
+
+    if label_info == {}
+        return
+    endif
+
+    call s:goto_win('p')
+    call setpos('.', [0,label_info.line,0,0])
+    normal! dd
+
+    call s:ToDoUpdate()
+    call s:goto_win(bufwinnr(s:buf_name))
+    call s:UpdateWindow()
+endfunction
+
 function! s:BuildAutoCmds() abort
     augroup TODOAutoCmds
         autocmd!
@@ -360,6 +381,7 @@ function! s:MappingKeys() abort
     nnoremap <script> <silent> <buffer> q  :call <SID>CloseWindow()<CR>
     nnoremap <script> <silent> <buffer> <CR> :call <SID>MoveToActiveLabel()<CR>
     nnoremap <script> <silent> <buffer> p :call <SID>ViewActiveLabel()<CR>
+    map <script> <silent> <buffer> dd :call <SID>RemoveLabel()<CR>
 endfunction
 
 function! s:Init() abort
