@@ -96,6 +96,8 @@ sp            Sort labels using priority tag (@p)
 sl            Sort labels by line
 st            Sort labels by type(todo,note,fixme)
 sa            Sort labels by author tag (@author)
+ip            Increase label priority
+dp            Decrease label priority
 
 ------------------------------------------------------------------------------
 VARIABLES                                                     *todo-variables*

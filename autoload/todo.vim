@@ -206,14 +206,15 @@ function! s:ToDoUpdate()
     let s:todo_info = result
 endfunction
 
+" Create string describing label
 function! s:GetInfoStr(todo_item)
 
     let result = '[' . a:todo_item.type . '] ' .  a:todo_item.text
 
-    if len(a:todo_item.tags)  > 0
+    if len(a:todo_item.tags) > 0
         let result .= " "
         for tag in a:todo_item.tags
-            if tag.arg == ''
+            if !has_key(tag, 'arg') || tag.arg == ''
                 let result .= tag.name . " "
             else
                 let result .= tag.name . " " . tag.arg . " "
@@ -360,7 +361,66 @@ function! s:RemoveLabel()
 
     call s:ToDoUpdate()
     call s:goto_win(bufwinnr(s:buf_name))
-    call s:UpdateWindow()
+endfunction
+
+function! s:getTagArg(label, tag_name, null)
+    if len(a:label.tags) == 0
+        return a:null
+    endif
+
+    for tag in a:label.tags
+        if tag.name ==# a:tag_name && has_key(tag, 'arg')
+            return tag.arg
+        endif
+    endfor
+
+    return a:null
+endfunction
+
+function! s:setTagArg(label, tag_name, arg)
+    if len(a:label.tags) == 0
+        return
+    endif
+
+    for tag in a:label.tags
+        if tag.name ==# a:tag_name
+            let tag.arg = a:arg
+        endif
+    endfor
+endfunction
+
+function! s:ChangeLabelPriority(inc_val)
+    let label = s:GetLabelByCursorPos()
+
+    if label == {}
+        return
+    endif
+
+    let arg = s:getTagArg(label, '@p', -1)
+
+    if arg == 0 && arg + a:inc_val < 0
+        return
+    endif
+
+    call s:goto_win('p')
+    if arg == -1
+        call add(label.tags, {'name': '@p', 'arg' : '0'})
+
+        let label_text = getline(label.line)
+        let label_text .= ' @p :0'
+
+        call setline(label.line, label_text)
+    else
+        call s:setTagArg(label, '@p', ''.arg + a:inc_val)
+
+        let label_text = getline(label.line)
+        let priority_str = '@p :' . (arg + a:inc_val)
+
+        let label_text = substitute(label_text, '\v\@p\ :\d+', priority_str, '')
+        call setline(label.line, label_text)
+    endif
+
+    call s:goto_win(bufwinnr(s:buf_name))
 endfunction
 
 function! s:BuildAutoCmds() abort
@@ -381,7 +441,9 @@ function! s:MappingKeys() abort
     nnoremap <script> <silent> <buffer> q  :call <SID>CloseWindow()<CR>
     nnoremap <script> <silent> <buffer> <CR> :call <SID>MoveToActiveLabel()<CR>
     nnoremap <script> <silent> <buffer> p :call <SID>ViewActiveLabel()<CR>
-    map <script> <silent> <buffer> dd :call <SID>RemoveLabel()<CR>
+    nnoremap <script> <silent> <buffer> ip :call <SID>ChangeLabelPriority(1)<CR> :call <SID>UpdateWindow()<CR>
+    nnoremap <script> <silent> <buffer> dp :call <SID>ChangeLabelPriority(-1)<CR> :call <SID>UpdateWindow()<CR>
+    map      <script> <silent> <buffer> dd :call <SID>RemoveLabel()<CR> :call <SID>UpdateWindow()<CR>
 endfunction
 
 function! s:Init() abort
