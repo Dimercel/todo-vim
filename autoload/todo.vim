@@ -7,6 +7,7 @@ let s:todo_patterns   = ["TODO[^a-zA-Z]", "FIXME[^a-zA-Z]", "NOTE[^a-zA-Z]"]
 let s:tag_arg_pattern = '\v\:(\"[^\"]+\"|[^\ ]+)'
 let s:tag_pattern     = '\v\@[^\ ]+(\ ' . strpart(s:tag_arg_pattern, 2) . ')?'
 let s:sort_comp       = 's:LineComparator'
+let s:help_view       = 0
 
 
 function! s:goto_win(winnr, ...) abort
@@ -29,6 +30,38 @@ function! s:ToggleWindow() abort
         call s:CloseWindow()
     endif
 
+endfunction
+
+function! s:ToggleHelp()
+    if s:help_view == 1
+        let s:help_view = 0
+
+        call s:UpdateWindow()
+        return
+    else
+        let s:help_view = 1
+    endif
+
+    setlocal modifiable
+    setlocal noreadonly
+    execute "normal! ggdG"
+
+    silent 0put ='\" Press ? for help'
+    silent put _
+    silent put = '\" ---------General-------- -------Sorting------ ------Priority-------'
+    silent put = '\" <CR>: Jump to the label  sp: Sort by priority ip: Increase priority'
+    silent put = '\" q: Close todo-vim window sl: Sort by line     dp: Decrease priority'
+    silent put = '\" p: View label in buffer  st: Sort by type   '
+    silent put = '\" dd: Delete label         sa: Sort by author '
+    silent put = '\" r: Update window                            '
+
+    " Erase last space string
+    execute "normal! Gdd"
+
+    setlocal nomodifiable
+    setlocal readonly
+
+    call setpos('.', [0,0,0,0])
 endfunction
 
 " Comparators for sorting
@@ -250,6 +283,10 @@ function! s:OpenWindow()
 endfunction
 
 function! s:UpdateWindow()
+    if s:help_view == 1
+        return
+    endif
+
     let cursor_pos = getcurpos()
 
     setlocal modifiable
@@ -259,7 +296,8 @@ function! s:UpdateWindow()
     if len(s:todo_info) == 0
         silent 0put ='\" Nothing yet('
     else
-        silent 0put _
+        silent 0put ='\" Press ? for help'
+        silent put _
 
         let s:todo_info = sort(s:todo_info, s:sort_comp)
         for item in s:todo_info
@@ -311,7 +349,7 @@ function! s:InitWindow() abort
 endfunction
 
 function! s:GetLabelByCursorPos()
-    let label_info_line_inx = 2
+    let label_info_line_inx = 3
 
     if bufname('%') != s:buf_name
         return {}
@@ -440,10 +478,11 @@ function! s:MappingKeys() abort
     nnoremap <script> <silent> <buffer> r  :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> q  :call <SID>CloseWindow()<CR>
     nnoremap <script> <silent> <buffer> <CR> :call <SID>MoveToActiveLabel()<CR>
-    nnoremap <script> <silent> <buffer> p :call <SID>ViewActiveLabel()<CR>
+    nnoremap <script> <silent> <buffer> p  :call <SID>ViewActiveLabel()<CR>
     nnoremap <script> <silent> <buffer> ip :call <SID>ChangeLabelPriority(1)<CR> :call <SID>UpdateWindow()<CR>
     nnoremap <script> <silent> <buffer> dp :call <SID>ChangeLabelPriority(-1)<CR> :call <SID>UpdateWindow()<CR>
     map      <script> <silent> <buffer> dd :call <SID>RemoveLabel()<CR> :call <SID>UpdateWindow()<CR>
+    map      <script> <silent> <buffer> ?  :call <SID>ToggleHelp()<CR>
 endfunction
 
 function! s:Init() abort
