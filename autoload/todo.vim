@@ -6,10 +6,11 @@ let s:todo_type       = ['todo', 'fixme', 'note']
 let s:todo_patterns   = ["TODO[^a-zA-Z]", "FIXME[^a-zA-Z]", "NOTE[^a-zA-Z]"]
 let s:tag_arg_pattern = '\v\:(\"[^\"]+\"|[^\ ]+)'
 let s:tag_pattern     = '\v\@[^\ ]+(\ ' . strpart(s:tag_arg_pattern, 2) . ')?'
-let s:sort_comp       = 's:LineComparator'
+let s:sort_comp       = 's:LineComparator' " Default sort labels by line
 let s:help_view       = 0
 
 
+" Functions for working with windows
 function! s:goto_win(winnr, ...) abort
     let cmd = type(a:winnr) == type(0) ? a:winnr . 'wincmd w'
                 \ : 'wincmd ' . a:winnr
@@ -19,6 +20,64 @@ function! s:goto_win(winnr, ...) abort
         noautocmd execute cmd
     else
         execute cmd
+    endif
+endfunction
+
+function! s:InitWindow() abort
+
+    setlocal filetype=todo
+
+    setlocal readonly
+    setlocal buftype=nofile
+    setlocal bufhidden=hide
+    setlocal noswapfile
+    setlocal nobuflisted
+    setlocal nomodifiable
+    setlocal nolist
+    setlocal wrap
+    setlocal textwidth=0
+    setlocal nospell
+    setlocal nonumber
+
+    call s:MappingKeys()
+
+    if exists('g:todo_winheight')
+        execute 'resize ' . g:todo_winheight . '<CR>'
+    endif
+
+endfunction
+
+function! s:OpenWindow()
+    let todowinnr = bufwinnr(s:buf_name)
+
+    if todowinnr == -1
+        call s:OpenWinAndStay()
+        call s:goto_win("p")
+    endif
+endfunction
+
+function! s:OpenWinAndStay()
+    let todowinnr = bufwinnr(s:buf_name)
+
+    if todowinnr == -1
+        call s:ToDoUpdate()
+
+        execute 'silent keepalt topleft split '.s:buf_name
+
+        call s:InitWindow()
+        call s:UpdateWindow()
+
+        call setpos('.', [0,0,0,0])
+    endif
+endfunction
+
+function! s:CloseWindow()
+    let todowinnr = bufwinnr(s:buf_name)
+
+    if todowinnr != -1
+        call s:goto_win(todowinnr)
+        close
+        call s:goto_win("p")
     endif
 endfunction
 
@@ -32,28 +91,28 @@ function! s:ToggleWindow() abort
 
 endfunction
 
-function! s:ToggleHelp()
+function! s:UpdateWindow()
     if s:help_view == 1
-        let s:help_view = 0
-
-        call s:UpdateWindow()
         return
-    else
-        let s:help_view = 1
     endif
+
+    let cursor_pos = getcurpos()
 
     setlocal modifiable
     setlocal noreadonly
     execute "normal! ggdG"
 
-    silent 0put ='\" Press ? for help'
-    silent put _
-    silent put = '\" ---------General-------- -------Sorting------ ------Priority-------'
-    silent put = '\" <CR>: Jump to the label  sp: Sort by priority ip: Increase priority'
-    silent put = '\" q: Close todo-vim window sl: Sort by line     dp: Decrease priority'
-    silent put = '\" p: View label in buffer  st: Sort by type   '
-    silent put = '\" dd: Delete label         sa: Sort by author '
-    silent put = '\" r: Update window                            '
+    if len(s:todo_info) == 0
+        silent 0put ='\" Nothing yet('
+    else
+        silent 0put ='\" Press ? for help'
+        silent put _
+
+        let s:todo_info = sort(s:todo_info, s:sort_comp)
+        for item in s:todo_info
+            silent put = s:GetInfoStr(item)
+        endfor
+    endif
 
     " Erase last space string
     execute "normal! Gdd"
@@ -61,10 +120,11 @@ function! s:ToggleHelp()
     setlocal nomodifiable
     setlocal readonly
 
-    call setpos('.', [0,0,0,0])
+    call setpos('.', cursor_pos)
 endfunction
 
-" Comparators for sorting
+
+" Functions for sorting labels
 function! s:TypeComparator(lval, rval)
     return a:lval.type == a:rval.type ? 0 : a:lval.type < a:rval.type ? -1 : 1
 endfunction
@@ -125,6 +185,8 @@ function! s:SetSortByAuthor()
     let s:sort_comp = 's:AuthorComparator'
 endfunction
 
+
+" Utilites function
 function! s:GetAllMatches(text, pattern)
     let result = []
 
@@ -172,6 +234,8 @@ function! s:GetMatch(text, pattern, start)
     return result
 endfunction
 
+
+" Functions for working with labels
 function! s:ParseToDoLine(text, pattern)
     let result = {}
 
@@ -258,95 +322,7 @@ function! s:GetInfoStr(todo_item)
     return s:StrTrim(result)
 endfunction
 
-function! s:OpenWinAndStay()
-    let todowinnr = bufwinnr(s:buf_name)
 
-    if todowinnr == -1
-        call s:ToDoUpdate()
-
-        execute 'silent keepalt topleft split '.s:buf_name
-
-        call s:InitWindow()
-        call s:UpdateWindow()
-
-        call setpos('.', [0,0,0,0])
-    endif
-endfunction
-
-function! s:OpenWindow()
-    let todowinnr = bufwinnr(s:buf_name)
-
-    if todowinnr == -1
-        call s:OpenWinAndStay()
-        call s:goto_win("p")
-    endif
-endfunction
-
-function! s:UpdateWindow()
-    if s:help_view == 1
-        return
-    endif
-
-    let cursor_pos = getcurpos()
-
-    setlocal modifiable
-    setlocal noreadonly
-    execute "normal! ggdG"
-
-    if len(s:todo_info) == 0
-        silent 0put ='\" Nothing yet('
-    else
-        silent 0put ='\" Press ? for help'
-        silent put _
-
-        let s:todo_info = sort(s:todo_info, s:sort_comp)
-        for item in s:todo_info
-            silent put = s:GetInfoStr(item)
-        endfor
-    endif
-
-    " Erase last space string
-    execute "normal! Gdd"
-
-    setlocal nomodifiable
-    setlocal readonly
-
-    call setpos('.', cursor_pos)
-endfunction
-
-function! s:CloseWindow()
-    let todowinnr = bufwinnr(s:buf_name)
-
-    if todowinnr != -1
-        call s:goto_win(todowinnr)
-        close
-        call s:goto_win("p")
-    endif
-endfunction
-
-function! s:InitWindow() abort
-
-    setlocal filetype=todo
-
-    setlocal readonly
-    setlocal buftype=nofile
-    setlocal bufhidden=hide
-    setlocal noswapfile
-    setlocal nobuflisted
-    setlocal nomodifiable
-    setlocal nolist
-    setlocal wrap
-    setlocal textwidth=0
-    setlocal nospell
-    setlocal nonumber
-
-    call s:MappingKeys()
-
-    if exists('g:todo_winheight')
-        execute 'resize ' . g:todo_winheight . '<CR>'
-    endif
-
-endfunction
 
 function! s:GetLabelByCursorPos()
     let label_info_line_inx = 3
@@ -459,6 +435,39 @@ function! s:ChangeLabelPriority(inc_val)
     endif
 
     call s:goto_win(bufwinnr(s:buf_name))
+endfunction
+
+
+function! s:ToggleHelp()
+    if s:help_view == 1
+        let s:help_view = 0
+
+        call s:UpdateWindow()
+        return
+    else
+        let s:help_view = 1
+    endif
+
+    setlocal modifiable
+    setlocal noreadonly
+    execute "normal! ggdG"
+
+    silent 0put ='\" Press ? for help'
+    silent put _
+    silent put = '\" ---------General-------- -------Sorting------ ------Priority-------'
+    silent put = '\" <CR>: Jump to the label  sp: Sort by priority ip: Increase priority'
+    silent put = '\" q: Close todo-vim window sl: Sort by line     dp: Decrease priority'
+    silent put = '\" p: View label in buffer  st: Sort by type   '
+    silent put = '\" dd: Delete label         sa: Sort by author '
+    silent put = '\" r: Update window                            '
+
+    " Erase last space string
+    execute "normal! Gdd"
+
+    setlocal nomodifiable
+    setlocal readonly
+
+    call setpos('.', [0,0,0,0])
 endfunction
 
 function! s:BuildAutoCmds() abort
