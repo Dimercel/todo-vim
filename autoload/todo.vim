@@ -45,6 +45,10 @@ function! s:InitWindow() abort
         execute 'resize ' . g:todo_winheight . '<CR>'
     endif
 
+    if exists('g:todo_vertical') && exists('g:todo_right') 
+      execute 'wincmd L'
+    endif
+
     if exists('g:todo_winwidth')
       execute 'vertical resize ' . g:todo_winwidth . '<CR>'
     endif
@@ -68,10 +72,6 @@ function! s:OpenWinAndStay()
         call s:ToDoUpdate()
 
         execute 'silent keepalt topleft '.ksplit.' '.s:buf_name
-
-        if exists('g:todo_vertical') && exists('g:todo_right') 
-          execute 'wincmd L'
-        endif
 
         call s:InitWindow()
         call s:UpdateWindow()
