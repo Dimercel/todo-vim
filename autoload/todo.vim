@@ -46,6 +46,7 @@ function! s:InitWindow() abort
     endif
 
     if exists('g:todo_winwidth')
+      echom g:todo_winwidth
       execute 'vertical resize ' . g:todo_winwidth . '<CR>'
     endif
 
@@ -109,7 +110,7 @@ function! s:UpdateWindow()
     execute "normal! ggdG"
 
     if len(s:todo_info) == 0
-        silent 0put ='\" Nothing yet('
+        silent 0put ='\" Nothing yet'
     else
         silent 0put ='\" Press ? for help'
         silent put _
