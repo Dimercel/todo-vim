@@ -46,7 +46,6 @@ function! s:InitWindow() abort
     endif
 
     if exists('g:todo_winwidth')
-      echom g:todo_winwidth
       execute 'vertical resize ' . g:todo_winwidth . '<CR>'
     endif
 
