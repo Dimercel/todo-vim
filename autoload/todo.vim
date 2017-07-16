@@ -62,13 +62,18 @@ endfunction
 
 function! s:OpenWinAndStay()
     let todowinnr = bufwinnr(s:buf_name)
-    let pos = exists('g:todo_winposition') ? g:todo_winposition : 'topleft'
-    let ksplit = exists('g:todo_isvertical') ? 'vsplit' : 'split'
+    let ksplit = exists('g:todo_vertical') ? 'vsplit' : 'split'
 
     if todowinnr == -1
         call s:ToDoUpdate()
 
-        execute 'silent keepalt '.pos.' '.ksplit.' '.s:buf_name
+        execute 'silent keepalt topleft '.ksplit.' '.s:buf_name
+
+        if exists('g:todo_vertical')
+          if exists('g:todo_right')
+            execute 'wincmd L'
+          endif
+        endif
 
         call s:InitWindow()
         call s:UpdateWindow()
