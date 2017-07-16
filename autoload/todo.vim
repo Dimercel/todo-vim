@@ -69,10 +69,8 @@ function! s:OpenWinAndStay()
 
         execute 'silent keepalt topleft '.ksplit.' '.s:buf_name
 
-        if exists('g:todo_vertical')
-          if exists('g:todo_right')
-            execute 'wincmd L'
-          endif
+        if exists('g:todo_vertical') && exists('g:todo_right') 
+          execute 'wincmd L'
         endif
 
         call s:InitWindow()
