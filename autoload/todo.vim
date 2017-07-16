@@ -45,6 +45,10 @@ function! s:InitWindow() abort
         execute 'resize ' . g:todo_winheight . '<CR>'
     endif
 
+    if exists('g:todo_winwidth')
+      execute 'vertical resize ' . g:todo_winwidth . '<CR>'
+    endif
+
 endfunction
 
 function! s:OpenWindow()
@@ -58,11 +62,12 @@ endfunction
 
 function! s:OpenWinAndStay()
     let todowinnr = bufwinnr(s:buf_name)
+    let pos = exists('g:todo_winposition') ? g:todo_winposition : 'topleft'
 
     if todowinnr == -1
         call s:ToDoUpdate()
 
-        execute 'silent keepalt topleft split '.s:buf_name
+        execute 'silent keepalt '.pos.' split '.s:buf_name
 
         call s:InitWindow()
         call s:UpdateWindow()
