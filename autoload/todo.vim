@@ -45,6 +45,14 @@ function! s:InitWindow() abort
         execute 'resize ' . g:todo_winheight . '<CR>'
     endif
 
+    if exists('g:todo_vertical') && exists('g:todo_right') 
+      execute 'wincmd L'
+    endif
+
+    if exists('g:todo_winwidth')
+      execute 'vertical resize ' . g:todo_winwidth . '<CR>'
+    endif
+
 endfunction
 
 function! s:OpenWindow()
@@ -58,11 +66,12 @@ endfunction
 
 function! s:OpenWinAndStay()
     let todowinnr = bufwinnr(s:buf_name)
+    let ksplit = exists('g:todo_vertical') ? 'vsplit' : 'split'
 
     if todowinnr == -1
         call s:ToDoUpdate()
 
-        execute 'silent keepalt topleft split '.s:buf_name
+        execute 'silent keepalt topleft '.ksplit.' '.s:buf_name
 
         call s:InitWindow()
         call s:UpdateWindow()
@@ -103,7 +112,7 @@ function! s:UpdateWindow()
     execute "normal! ggdG"
 
     if len(s:todo_info) == 0
-        silent 0put ='\" Nothing yet('
+        silent 0put ='\" Nothing yet'
     else
         silent 0put ='\" Press ? for help'
         silent put _

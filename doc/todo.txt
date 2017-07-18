@@ -48,7 +48,7 @@ After installation you can run todo-vim with the |:TODOOpen| or |:TODOToggle|
 commands.
 
 ==============================================================================
-4. Usage                                                          *todo-usage*
+3. Usage                                                          *todo-usage*
 
 Basic usage of todo-vim is opening todo window by |:TODOOpen| and moving
 the cursor to a certain label. If set of g:todo_autopreview variable, you
@@ -111,6 +111,18 @@ g:todo_winheight                                            *g:todo_winheight*
        If you do not like the standard height of the window, use this
        variable. The value of this variable is the height of the window when
        opening.
+
+g:todo_winwidth                                              *g:todo_winwidth*
+       Use this variable to change the vertical size (aka the width) of the
+       todo window.
+
+g:todo_vertical                                              *g:todo_vertical*
+       When this variable is set to 1, the todo window will be launched in a
+       vertical mode, and not in an horizontal mode.
+
+g:todo_right                                                    *g:todo_right*
+       When this variable and the *g:todo_vertical* are set to 1 the vertical
+       window will be launched on the right and not on the left.
 
 ==============================================================================
 4. Tags                                                          *todo-tags*
