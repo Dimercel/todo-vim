@@ -121,7 +121,7 @@ g:todo_vertical                                              *g:todo_vertical*
        vertical mode, and not in an horizontal mode.
 
 g:todo_right                                                    *g:todo_right*
-       When this variable and the *g:todo_vertical* are set to 1 the vertical
+       When this variable and the g:todo_vertical are set to 1 the vertical
        window will be launched on the right and not on the left.
 
 ==============================================================================
