@@ -283,9 +283,8 @@ function! s:ToDoUpdate()
     let result = []
     let cur_pos = getcurpos()
 
-    call setpos('.', [0,0,0,0])
-
     for inx in range(len(s:todo_patterns))
+        call setpos('.', [0,0,0,0])
         let search_pat = s:todo_patterns[inx]
         let pat_type = s:todo_type[inx]
         let find_inx = searchpos(search_pat, 'cn')
