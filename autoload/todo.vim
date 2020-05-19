@@ -49,6 +49,10 @@ function! s:InitWindow() abort
       execute 'wincmd L'
     endif
 
+    if exists('g:todo_below')
+      execute 'wincmd J'
+    endif
+
     if exists('g:todo_winwidth')
       execute 'vertical resize ' . g:todo_winwidth . '<CR>'
     endif
