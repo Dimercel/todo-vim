@@ -41,7 +41,7 @@ function! s:InitWindow() abort
 
     call s:MappingKeys()
 
-    if exists('g:todo_below')
+    if exists('g:todo_below') && !exists('g:todo_vertical')
       execute 'wincmd J'
     endif
 
