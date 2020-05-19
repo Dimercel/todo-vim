@@ -41,16 +41,16 @@ function! s:InitWindow() abort
 
     call s:MappingKeys()
 
+    if exists('g:todo_below')
+      execute 'wincmd J'
+    endif
+
     if exists('g:todo_winheight')
         execute 'resize ' . g:todo_winheight . '<CR>'
     endif
 
     if exists('g:todo_vertical') && exists('g:todo_right') 
       execute 'wincmd L'
-    endif
-
-    if exists('g:todo_below')
-      execute 'wincmd J'
     endif
 
     if exists('g:todo_winwidth')
