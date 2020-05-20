@@ -124,6 +124,11 @@ g:todo_right                                                    *g:todo_right*
        When this variable and the todo_vertical are set to 1 the vertical
        window will be launched on the right and not on the left.
 
+g:todo_below                                                    *g:todo_below*
+       When this variable is set to 1, the todo window will be launched on
+       the bottom and not on the top. This flag only takes effect if
+       |g:todo_vertical| is not set.
+
 ==============================================================================
 4. Tags                                                          *todo-tags*
 
