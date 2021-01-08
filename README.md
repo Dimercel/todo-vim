@@ -6,10 +6,10 @@ your todo labels in code.
 
 ## Installation
 Extract the archive or clone the repository into a directory in your 'runtimepath',
-or use a plugin manager of your choice like [NeoBundle](https://github.com/Shougo/neobundle.vim).
-Example for NeoBundle(add in your .vimrc):
+or use a plugin manager of your choice like [Dein.vim](https://github.com/Shougo/dein.vim).
+Example for Dein.vim(add in your .vimrc):
 ```vim
-NeoBundle 'Dimercel/todo-vim'
+call dein#add('Dimercel/todo-vim')
 ```
 
 ## Quickstart
