@@ -2,8 +2,11 @@ let g:loaded_todo = 1
 
 let s:buf_name        = '__todo__'
 let s:todo_info       = []
-let s:todo_type       = ['todo', 'fixme', 'note']
-let s:todo_patterns   = ["TODO[^a-zA-Z]", "FIXME[^a-zA-Z]", "NOTE[^a-zA-Z]"]
+let s:todo_type       = ['todo', 'fixme', 'note', 'xxx']
+let s:todo_patterns   = ["TODO[^a-zA-Z]",
+                        \"FIXME[^a-zA-Z]",
+                        \"NOTE[^a-zA-Z]",
+                        \"XXX[^a-zA-Z]"]
 let s:tag_arg_pattern = '\v\:(\"[^\"]+\"|[^\ ]+)'
 let s:tag_pattern     = '\v\@[^\ ]+(\ ' . strpart(s:tag_arg_pattern, 2) . ')?'
 let s:sort_comp       = 's:LineComparator' " Default sort labels by line
@@ -49,7 +52,7 @@ function! s:InitWindow() abort
         execute 'resize ' . g:todo_winheight . '<CR>'
     endif
 
-    if exists('g:todo_vertical') && exists('g:todo_right') 
+    if exists('g:todo_vertical') && exists('g:todo_right')
       execute 'wincmd L'
     endif
 
